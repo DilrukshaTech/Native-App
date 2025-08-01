@@ -3,7 +3,7 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
-
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function RootLayout() {
@@ -17,13 +17,21 @@ export default function RootLayout() {
     return null;
   }
 
+  
+    const queryClient = new QueryClient();
+
   return (
+<QueryClientProvider client={queryClient}>
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack >
+ 
+
+        <Stack.Screen name="(screens)" options={{ headerShown: false }} />  
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />  
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
+    </QueryClientProvider>
   );
 }
