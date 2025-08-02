@@ -12,6 +12,7 @@ import useFeedbackAlertStore from "../stores/useFeedbackAlertStore";
 import useAxios from "../utils/axios/useAxios";
 import UserValidationSchemas from "../utils/validation/UserValidation";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import useUserStore  from "../stores/useUserStore";
 
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebaseConfig";
@@ -24,6 +25,7 @@ interface SignupFormValues {
 
 const Signup = () => {
 
+  const { setUser } = useUserStore();
   
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
@@ -42,7 +44,7 @@ const Signup = () => {
         values.password
       );
 
-      const token = await userCred.user.getIdToken();
+      const token = await userCred.user.getIdToken(true);
    
       await AsyncStorage.setItem("token",token);
       console.log("Firebase ID token:", token);
@@ -58,8 +60,12 @@ const Signup = () => {
         },
       });
 
-      console.log("Server response:", response.data);
-      return response.data;
+
+      const userData=response.data.user;
+      console.log("User data:", userData);
+      setUser(userData)
+      await AsyncStorage.setItem("user", JSON.stringify(userData)); // persist
+
     } catch (err: any) {
       console.error("Error in mutationFn:", err);
       throw new Error(err.message || "Something went wrong");
