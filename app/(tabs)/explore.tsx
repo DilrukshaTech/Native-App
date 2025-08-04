@@ -1,4 +1,4 @@
-import { Image } from 'expo-image';
+
 
 
 import { Collapsible } from '@/components/Collapsible';

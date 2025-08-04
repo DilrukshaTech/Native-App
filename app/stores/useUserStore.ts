@@ -2,9 +2,11 @@
 import {create} from 'zustand';
 
 interface User{
-    id: string;
+    id:number;
     name: string;
     email: string;
+    list?: string[];
+    tasks?: any[];
     profilePicture?: string;
 }
 interface UserStore {

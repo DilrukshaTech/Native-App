@@ -75,6 +75,7 @@ const Signup = () => {
   },
   onSuccess: () => {
     queryClient.invalidateQueries({ queryKey: ["fetch-user-data"] });
+    
     router.push("/explore");
   },
   onError: (error: any) => {

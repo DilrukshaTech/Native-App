@@ -4,7 +4,7 @@ import { StyleSheet,ViewStyle } from "react-native";
 
 interface CardProps {
   title: string;
-  subtitle?: string;
+  subtitle?: number;
  style?: ViewStyle | ViewStyle[];
 }
 
@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: "#fff",
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: 500,
     lineHeight: 16,
   },
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
 
   subtitle:{
     color:'#fff',
-    fontSize:24,
+    fontSize:26,
     fontWeight:600
   },
 
