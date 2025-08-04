@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-import { Stack } from "expo-router";
 
 import Input from "../components/input/Input";
 import TopHeader from "../components/topHeader/TopHeader";
@@ -38,14 +37,7 @@ const Signin = () => {
   const { AxiosRequest} = useAxios();
   const { SigninUserValidation } = UserValidationSchemas();
 
-  const storeToken = async (token: string) => {
-    try {
-      await AsyncStorage.setItem("token", token);
-      console.log("Token stored successfully:", token);
-    } catch (error) {
-      console.error("Error storing the token:", error);
-    }
-  };
+ 
 
   const { mutateAsync, isPending } = useMutation({
     mutationFn: async (values: SigninFormValues) => {
@@ -62,9 +54,8 @@ const Signin = () => {
       return response.data;
     },
 
-    onSuccess: (response) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["fetch-user-data"] });
-      showFeedback("Login successful", "success");
       // console.log("token", response.access_token);
       // storeToken(response.access_token);
       // router.push("/feedback");
@@ -135,7 +126,7 @@ const Signin = () => {
             name="arrowleft"
             size={34}
             color="#fff"
-            onPress={() => router.push("/intro")}
+            onPress={() => router.push("/signup")}
           />
         }
         text="No account?"
@@ -144,7 +135,7 @@ const Signin = () => {
             text="Sign up"
             textColor="#fff"
             primaryColor
-            onPress={() => router.push("/signup")}
+            onPress={() => router.replace("/signup")}
           />
         }
       />
