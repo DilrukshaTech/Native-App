@@ -1,7 +1,7 @@
 import { HelloWave } from "@/components/HelloWave";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import { taskProgressMessages } from "@/constants/Title";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import SimpleLineIcons from "@expo/vector-icons/SimpleLineIcons";
 import { useQuery } from "@tanstack/react-query";
@@ -12,7 +12,6 @@ import ComponentLoading from "../components/Loading/ComponentLoading";
 import { CircularProgress } from "../components/progress/CircularProgress";
 import useUserStore from "../stores/useUserStore";
 import useAxios from "../utils/axios/useAxios";
-import { taskProgressMessages } from "@/constants/Title";
 
 export default function HomeScreen() {
   const [todayTasks, setTodayTasks] = useState(0);
@@ -53,12 +52,13 @@ export default function HomeScreen() {
       refetchOnWindowFocus: false,
     });
 
+  //get message randomly
 
-    //get message randomly
-
-    const getMessageByRate=(rate:number)=>{
-      return taskProgressMessages.find(({range}) =>rate>= range[0] && rate<=range[1]);
-    }
+  const getMessageByRate = (rate: number) => {
+    return taskProgressMessages.find(
+      ({ range }) => rate >= range[0] && rate <= range[1]
+    );
+  };
 
   const message = getMessageByRate(completedTasksRate?.completionRate || 0);
 
@@ -81,28 +81,28 @@ export default function HomeScreen() {
       </ThemedView>
       <ThemedView style={styles.performanceContainer}>
         <ThemedView style={{ width: 140 }}>
-<CircularProgress
-          size={140}
-          strokeWidth={15}
-          progress={completedTasksRate?.completionRate || 0}
-          color="#2B9AAF"
-          content={
-            <ThemedView>
-              <ThemedView style={styles.innerIcon}>
-                <SimpleLineIcons name="fire" size={15} color="#ffffff" />
+          <CircularProgress
+            size={140}
+            strokeWidth={15}
+            progress={completedTasksRate?.completionRate || 0}
+            color="#2B9AAF"
+            content={
+              <ThemedView>
+                <ThemedView style={styles.innerIcon}>
+                  <SimpleLineIcons name="fire" size={15} color="#ffffff" />
+                </ThemedView>
+                <ThemedText style={styles.innerCircleText}>
+                  {completedTasksRate?.completedTasks} out of{" "}
+                  {completedTasksRate?.totalTasks} tasks
+                </ThemedText>
+                <ThemedText type="subtitle" style={styles.innerCircleValue}>
+                  {completedTasksRate?.completionRate}%
+                </ThemedText>
               </ThemedView>
-              <ThemedText style={styles.innerCircleText}>
-                {completedTasksRate?.completedTasks} out of{" "}
-                {completedTasksRate?.totalTasks} tasks
-              </ThemedText>
-              <ThemedText type="subtitle" style={styles.innerCircleValue}>
-                {completedTasksRate?.completionRate}%
-              </ThemedText>
-            </ThemedView>
-          }
-        />
+            }
+          />
         </ThemedView>
-        
+
         <ThemedView style={styles.performanceRightContainer}>
           <ThemedText type="defaultSemiBold" style={{ color: "#292D32" }}>
             Performance
@@ -121,7 +121,6 @@ export default function HomeScreen() {
           </ThemedView>
           <ThemedView style={styles.messages}>
             <ThemedView style={styles.messageTitle}>
-           
               <ThemedText
                 style={{
                   color: "#000000",
@@ -139,7 +138,17 @@ export default function HomeScreen() {
           </ThemedView>
         </ThemedView>
       </ThemedView>
-      <ThemedView></ThemedView>
+      <ThemedView>
+        <ThemedText
+          type="defaultSemiBold"
+          style={{ color: "#272623", marginTop: 20 }}
+        >
+          Lists
+        </ThemedText>
+        <ThemedView>
+          
+        </ThemedView>
+      </ThemedView>
     </SafeAreaView>
   );
 }
@@ -194,16 +203,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#8678DA",
   },
 
- performanceContainer: {
-  flexDirection: "row",
-  gap: 16,
-  borderRadius: 20,
-  marginTop: 16,
-  paddingHorizontal: 16,
-  paddingVertical: 16,
-  backgroundColor: "#fff",
-  alignItems: "center",
-},
+  performanceContainer: {
+    flexDirection: "row",
+    gap: 16,
+    borderRadius: 20,
+    marginTop: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: "#fff",
+    alignItems: "center",
+  },
 
   tips: {
     display: "flex",
@@ -217,10 +226,10 @@ const styles = StyleSheet.create({
     width: 76,
   },
   performanceRightContainer: {
-     flex: 1,
-  flexDirection: "column",
-  gap: 8,
-  flexShrink: 1,
+    flex: 1,
+    flexDirection: "column",
+    gap: 8,
+    flexShrink: 1,
   },
   performanceLeftContainer: {
     flexDirection: "column",
@@ -251,7 +260,7 @@ const styles = StyleSheet.create({
 
   messages: {
     alignItems: "center",
-    gap:3,
+    gap: 3,
   },
   messageTitle: {
     flexDirection: "row",
@@ -262,7 +271,5 @@ const styles = StyleSheet.create({
     color: "#4C677D",
     fontSize: 12,
     fontWeight: "500",
-   
-   
   },
 });

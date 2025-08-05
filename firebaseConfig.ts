@@ -12,12 +12,13 @@ const firebaseConfig = {
   measurementId: "G-59C34FGP54"
 };
 
-// Initialize Firebase
+//Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// ✅ Correct way for persistent Auth in React Native
+//persistent Auth in React Native
 const auth = initializeAuth(app, {
   persistence: getReactNativePersistence(ReactNativeAsyncStorage),
 });
+
 
 export { auth };
