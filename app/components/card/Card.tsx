@@ -15,7 +15,7 @@ export const Card = ({ title, subtitle, style }: CardProps) => {
         <ThemedText style={styles.title}>{title || "Today"}</ThemedText>
       </ThemedView>
       <ThemedView style={styles.subtitleContainer}>
-        <ThemedText style={styles.subtitle}>{subtitle || "5"}</ThemedText>
+        <ThemedText style={styles.subtitle}>{subtitle || "0"}</ThemedText>
         <ThemedText style={styles.task}>tasks</ThemedText>
       </ThemedView> 
     </ThemedView>

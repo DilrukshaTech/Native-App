@@ -173,10 +173,12 @@ export default function HomeScreen() {
               progress={<ListProgressCircle 
                 size={25}
                 progress={list.completionRate}
-                color="#2B9AAF"
+                color={list.color}
                 backgroundColor="#D7F2F6"
               />}
               taskCount={list.totalTasks}
+              color={list.color}
+              backgroundOpacity={0.2}
 
               
             />
