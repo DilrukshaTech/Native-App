@@ -8,10 +8,13 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { SafeAreaView, StyleSheet } from "react-native";
 import { Card } from "../components/card/Card";
+import ListCard from "../components/card/ListCard";
 import ComponentLoading from "../components/Loading/ComponentLoading";
 import { CircularProgress } from "../components/progress/CircularProgress";
 import useUserStore from "../stores/useUserStore";
 import useAxios from "../utils/axios/useAxios";
+import { ScrollView } from "react-native-gesture-handler";
+import { ListProgressCircle } from "../components/progress/ListProgressCircle";
 
 export default function HomeScreen() {
   const [todayTasks, setTodayTasks] = useState(0);
@@ -52,6 +55,21 @@ export default function HomeScreen() {
       refetchOnWindowFocus: false,
     });
 
+    // My list
+  const { data: myList, isLoading: myListLoading } =
+    useQuery({
+      queryKey: ["myList"],
+      queryFn: async () => {
+        const response = await AxiosRequest({
+          url: `/users/completed-rate/${user?.id}`,
+          method: "GET",
+        });
+        return response.data;
+      },
+      refetchOnWindowFocus: false,
+    });
+
+    console.log("My List", myList);
   //get message randomly
 
   const getMessageByRate = (rate: number) => {
@@ -64,7 +82,8 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {isCompletedRateLoading && <ComponentLoading />}
+      <ScrollView scrollEnabled={true} showsVerticalScrollIndicator={false} style={{ flex: 1,backgroundColor: "#E9F4FA", }}>
+      {(isCompletedRateLoading || myListLoading) && <ComponentLoading />}
       <ThemedView style={styles.headerContainer}>
         <ThemedText type="title" style={styles.subtitle}>
           Good Morning
@@ -138,18 +157,36 @@ export default function HomeScreen() {
           </ThemedView>
         </ThemedView>
       </ThemedView>
-      <ThemedView>
+      <ThemedView style={styles.listContainer}>
         <ThemedText
           type="defaultSemiBold"
           style={{ color: "#272623", marginTop: 20 }}
         >
-          Lists
+          My Lists
         </ThemedText>
-        <ThemedView>
-          
+        <ThemedView style={styles.mylistsContainer}>
+          {myList?.listRates.map((list:any) => (
+            <ListCard
+              key={list.listId}
+              rate={list.completionRate}
+              title={list.listTitle}
+              progress={<ListProgressCircle 
+                size={25}
+                progress={list.completionRate}
+                color="#2B9AAF"
+                backgroundColor="#D7F2F6"
+              />}
+              taskCount={list.totalTasks}
+
+              
+            />
+          ))}
+         
         </ThemedView>
       </ThemedView>
+      </ScrollView>
     </SafeAreaView>
+    
   );
 }
 
@@ -272,4 +309,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "500",
   },
+  listContainer: {
+  
+    flexDirection: "column",
+    gap: 10,
+    width: "100%",
+  },
+ mylistsContainer: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  justifyContent: "space-between", 
+  
+  gap: 8,
+}
+
 });
