@@ -33,10 +33,11 @@ const styles = StyleSheet.create({
     
   },
   title: {
-    color: "#fff",
+    color: "#ffffff",
     fontSize: 15,
     fontWeight: 500,
     lineHeight: 16,
+    backgroundColor:'transparent',
   },
   subtitleContainer: {
   

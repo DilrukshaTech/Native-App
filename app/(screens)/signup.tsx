@@ -45,7 +45,9 @@ const Signup = () => {
       );
 
       const token = await userCred.user.getIdToken(true);
-   
+     const refreshToken = userCred.user.refreshToken;
+
+      await AsyncStorage.setItem("refreshToken", refreshToken);
       await AsyncStorage.setItem("token",token);
       console.log("Firebase ID token:", token);
       
@@ -75,8 +77,8 @@ const Signup = () => {
   },
   onSuccess: () => {
     queryClient.invalidateQueries({ queryKey: ["fetch-user-data"] });
-    
-    router.push("/tasks");
+
+    router.push("/home");
   },
   onError: (error: any) => {
     showFeedback("Signup failed. Please try again.", "failed");

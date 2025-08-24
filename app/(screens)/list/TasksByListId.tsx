@@ -1,44 +1,51 @@
-import { FlatList, StyleSheet } from "react-native";
-
-import { ThemedText } from "@/components/ThemedText";
+import TopHeader from "@/app/components/topHeader/TopHeader";
 import { ThemedView } from "@/components/ThemedView";
+
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { SafeAreaView, StyleSheet } from "react-native";
+import useUserStore from "../../stores/useUserStore";
+import useAxios from "../../utils/axios/useAxios";
+
+import ComponentLoading from "@/app/components/Loading/ComponentLoading";
+import TaskCard from "@/app/components/card/TaskCard";
+import useFeedbackAlertStore from "@/app/stores/useFeedbackAlertStore";
+import { ThemedText } from "@/components/ThemedText";
 import { AntDesign } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
-import { useMemo } from "react";
-
-import FloatingButton from "../components/buttons/FloatButton";
-import TaskCard from "../components/card/TaskCard";
-import ComponentLoading from "../components/Loading/ComponentLoading";
-import TopHeader from "../components/topHeader/TopHeader";
-import useFeedbackAlertStore from "../stores/useFeedbackAlertStore";
-import useUserStore from "../stores/useUserStore";
-import useAxios from "../utils/axios/useAxios";
+import { useCallback, useMemo } from "react";
+import { FlatList } from "react-native-gesture-handler";
 import { SafeContainer } from "@/components/SafeContainer";
 
-interface taskProps {
-  id: number;
+
+interface taskProps{
+  id:number
 }
+
 export default function Tasks() {
   const router = useRouter();
-  const { AxiosRequest } = useAxios();
   const { user } = useUserStore();
+  const { AxiosRequest } = useAxios();
+  const { listId } = useLocalSearchParams<{ listId: string }>();
+  const { title } = useLocalSearchParams<{ title: string }>();
+
   const queryClient = useQueryClient();
   const { showFeedback } = useFeedbackAlertStore();
 
   // mylist
   const { data: myTasks, isLoading } = useQuery({
-    queryKey: ["tasks"],
+    queryKey: ["tasksbylist", listId],
     queryFn: async () => {
       const response = await AxiosRequest({
-        url: `/tasks/?completed=false&userId=${user?.id}`,
+        url: `/lists/u?listId=${listId}&userId=${user?.id}&completed=false`,
         method: "GET",
       });
       return response.data;
     },
+    enabled: !!listId, // prevents unnecessary fetches. only renders when listId is available
     refetchOnWindowFocus: false,
   });
 
+  console.log("myTasks", myTasks);
   const renderTasks = () => {
     if (isLoading) {
       return <ComponentLoading />;
@@ -65,28 +72,25 @@ export default function Tasks() {
   };
 
   // build list for FlatList
-
   const tasks = useMemo(() => {
     if (!myTasks) return [];
 
-    return myTasks.map((task: any) => {
-      const taskDate = new Date(task.Date); // ISO string from API
+    return myTasks?.tasks?.map((task: any) => {
+      const taskDate = new Date(task.Date);
       const today = startOfLocalDay(new Date());
       const d0 = startOfLocalDay(taskDate);
       const tomorrow = new Date(today);
       tomorrow.setDate(today.getDate() + 1);
 
-      // compute label from Date
       let computedLabel = "";
       if (isSameLocalDay(d0, today)) {
         computedLabel = "Today";
       } else if (isSameLocalDay(d0, tomorrow)) {
         computedLabel = "Tomorrow";
       } else {
-        computedLabel = formatYYYYMMDDLocal(taskDate); // e.g. 2025-09-09
+        computedLabel = formatYYYYMMDDLocal(taskDate);
       }
 
-      // prefer delayLabel if present and not completed
       const displayLabel =
         task.delayLabel && task.completed === false
           ? task.delayLabel
@@ -95,21 +99,22 @@ export default function Tasks() {
       return {
         ...task,
         id: task.id,
-        category: task.title,
+        category: myTasks.title,
         displayLabel,
       };
     });
   }, [myTasks]);
 
+
   const { mutateAsync, isPending } = useMutation({
-    mutationFn: async (id: taskProps) => {
+    mutationFn: async (id:taskProps) => {
       try {
         const response = await AxiosRequest({
           url: `/tasks/complete?id=${id}&userId=${user?.id}`,
           method: "PATCH",
-          data: {
-            completed: true,
-          },
+          data:{
+            completed:true
+          }
         });
 
         return response.data;
@@ -123,22 +128,39 @@ export default function Tasks() {
       queryClient.invalidateQueries({ queryKey: ["completedTasksRate"] });
       queryClient.invalidateQueries({ queryKey: ["lists"] });
       queryClient.invalidateQueries({ queryKey: ["tasksbylist"] });
+
+
     },
     onError() {
       showFeedback("Failed to complete the task", "failed");
     },
   });
 
-  const onSubmit = async (id: taskProps) => {
-    await mutateAsync(id);
-  };
+  const onSubmit=async (id:taskProps)=>{
+    await mutateAsync(id)
+  }
+
+  const renderItem = useCallback(
+    ({ item }: { item: any }) => (
+      <TaskCard
+        category={item.category}
+        title={item.title}
+        date={item.displayLabel}
+        time={item.startTime}
+        dataStyle={{
+          color: item.delayLabel && item.completed === false ? "red" : "#777",
+        }}
+        onPress={()=>onSubmit(item.id)}
+      />
+    ),
+    []
+  );
 
   return (
     <SafeContainer>
       {renderTasks()}
-      <FloatingButton onPress={() => router.push("/task/CreateTask")} />
       <TopHeader
-        title="All Tasks"
+        title={title || "Tasks"}
         icon={
           <AntDesign
             name="close"
@@ -149,26 +171,12 @@ export default function Tasks() {
         }
       />
       <ThemedView style={styles.tasksContainer}>
-        {myTasks?.length ? (
+        {tasks?.length ? (
           <FlatList
             data={tasks}
             keyExtractor={(item) => item.id.toString()}
             showsVerticalScrollIndicator={false}
-            renderItem={({ item }) => (
-              <TaskCard
-                category={item.list.title}
-                title={item.title}
-                date={item.displayLabel}
-                time={item.startTime}
-                dataStyle={{
-                  color:
-                    item.delayLabel && item.completed === false
-                      ? "red"
-                      : "#777",
-                }}
-                onPress={() => onSubmit(item.id)}
-              />
-            )}
+            renderItem={renderItem}
           />
         ) : (
           <ThemedText style={{ textAlign: "center", alignItems: "center" }}>
@@ -183,7 +191,7 @@ export default function Tasks() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffff",
+    backgroundColor: "#fff",
   },
   tasksContainer: {
     position: "absolute",
@@ -194,7 +202,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     gap: 16,
     backgroundColor: "#E9F1FA",
-    height: "88%",
+    height: "85%",
     borderTopLeftRadius: 26,
     borderTopRightRadius: 26,
     paddingHorizontal: 20,

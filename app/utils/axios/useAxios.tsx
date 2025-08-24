@@ -3,6 +3,7 @@ import axios, { AxiosResponse } from "axios";
 import { useState } from "react";
 import useFeedbackAlertStore from "../../stores/useFeedbackAlertStore";
 
+// const BASE_URI = "https://myappapi.duckdns.org";
 const BASE_URI = "http://192.168.1.4:3000";
 
 const useAxios = () => {

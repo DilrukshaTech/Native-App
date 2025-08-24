@@ -125,7 +125,7 @@ const Input: React.FC<InputProps> = ({
 
 const styles = StyleSheet.create({
   input: {
-    width: 350,
+    width: '100%',
     height: 50,
     alignItems: "center",
     backgroundColor: "#F5F7FA",
@@ -136,7 +136,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 500,
     alignSelf: "flex-start",
-
     justifyContent: "center",
   },
 

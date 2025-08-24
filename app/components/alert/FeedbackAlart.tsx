@@ -22,7 +22,7 @@ const FeedbackAlart = () => {
             ):(<Image source={successImage} style={styles.errorImage} />)}
 
             <Dialog.Title style={[styles.title, type === "failed" ? styles.errorTitle:styles.successTitle]}>
-                {type === "failed" ? "Something went wrong" : "Successful"}
+                {type === "failed" ? "Something went wrong" : "successful"}
             </Dialog.Title>
             <Dialog.Content>
                 <Text style={styles.msg}>{msg}</Text>

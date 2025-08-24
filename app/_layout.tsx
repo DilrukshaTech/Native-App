@@ -4,7 +4,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-
+import { Provider } from 'react-native-paper';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 
@@ -23,6 +23,7 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1,backgroundColor: "transparent", }}>
     
+    <Provider>
     <QueryClientProvider client={queryClient}>
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
@@ -33,6 +34,7 @@ export default function RootLayout() {
       <StatusBar style="auto" />
     </ThemeProvider>
     </QueryClientProvider>
+    </Provider>
     </GestureHandlerRootView>
   );
 }

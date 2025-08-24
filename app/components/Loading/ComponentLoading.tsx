@@ -18,10 +18,10 @@ const ComponentLoading = () => {
             right: 0,
             bottom: 0,
           
-            backgroundColor: "rgba(222, 221, 221, 0.8)",
+            backgroundColor: "#2B9AAF",
             justifyContent: "center",
             alignItems: "center",
-            zIndex: 9,
+            zIndex: 10,
           },
     });
        

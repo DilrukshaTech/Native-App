@@ -23,11 +23,11 @@ const TopHeader: React.FC<TopHeaderProps> = ({
       <TouchableOpacity style={title ? styles.iconContainer : ""}>
         {icon ? icon :''}
       </TouchableOpacity>
-      <View style={title ? styles.title : ""}>
+      <View>
         <Text style={styles.titleText}>{title}</Text>
       </View>
-      {/* Empty View to push text & button to right */}
-      <View style={styles.flexSpace} />
+      
+    
 
       <View style={styles.rightContainer}>
         <Text style={styles.text}>{text}</Text>
@@ -39,18 +39,18 @@ const TopHeader: React.FC<TopHeaderProps> = ({
 
 const styles = StyleSheet.create({
   container: {
+
     flexDirection: "row",
     alignItems: "center",
-    top: 40,
-    padding: 15,
+    justifyContent: "space-between",
+    top: 50,
+    zIndex: 9,
+   
   },
   iconContainer: {
-    position: "absolute",
-    paddingLeft: 20,
+    position: "relative",
   },
-  flexSpace: {
-    flex: 1, // Pushes the right section to the corner
-  },
+  
   rightContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -62,16 +62,15 @@ const styles = StyleSheet.create({
     marginRight: 10,
     fontWeight: 400,
   },
-  title: {
-    width: "100%",
-    alignItems: "center",
-  },
+
 
   titleText: {
     fontFamily: "Inter",
     fontSize:18,
-    fontWeight:700,
-    fontStyle:'normal'
+    fontWeight:500,
+    fontStyle:'normal',
+    textAlign: "center",
+    color:'#1E1E1E'
   },
 });
 

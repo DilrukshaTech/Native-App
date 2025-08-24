@@ -39,7 +39,7 @@ const TopBtn = ({
     mode={mode}
     style={styles.btn}
     labelStyle={{ color: textColor, fontSize }}
-    buttonColor={primaryColor ? "rgba(255, 255, 255, 0.34)" : "#8C80FF"}
+    buttonColor={primaryColor ? "#2B9AAF" : "#8C80FF"}
   >
     {text}
   </Button>

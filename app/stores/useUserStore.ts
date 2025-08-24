@@ -1,5 +1,8 @@
 
 import {create} from 'zustand';
+import { useQueryClient } from '@tanstack/react-query';
+
+
 
 interface User{
     id:number;
@@ -16,12 +19,16 @@ interface UserStore {
 }
 
 const useUserStore = create<UserStore>((set)=> ({
+
+    
     user: null,
     setUser: (user) => set({ user }),
     clearUser: () => set({ user: null }),
-
     
+
 }));
+
+
 
 
 export default useUserStore;

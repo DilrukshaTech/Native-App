@@ -1,27 +1,30 @@
 import {
-  View,
-  Text,
   SafeAreaView,
   StyleSheet,
+  Text,
   TouchableOpacity,
+  View,
 } from "react-native";
 
+import AntDesign from "@expo/vector-icons/AntDesign";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import { Checkbox } from "react-native-paper";
+import PrimaryBtn from "../components/buttons/PrimaryBtn";
+import Button from "../components/buttons/TopBtn";
 import Input from "../components/input/Input";
 import TopHeader from "../components/topHeader/TopHeader";
-import AntDesign from "@expo/vector-icons/AntDesign";
-import Button from "../components/buttons/TopBtn";
-import { useRouter } from "expo-router";
-import { Checkbox } from "react-native-paper";
-import { useState } from "react";
-import PrimaryBtn from "../components/buttons/PrimaryBtn";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import UserValidationSchemas from "../utils/validation/UserValidation";
-import { useFormik } from "formik";
-import useFeedbackAlertStore from "../stores/useFeedbackAlertStore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFormik } from "formik";
 import ComponentLoading from "../components/Loading/ComponentLoading";
+import useFeedbackAlertStore from "../stores/useFeedbackAlertStore";
+import useUserStore from "../stores/useUserStore";
 import useAxios from "../utils/axios/useAxios";
+import UserValidationSchemas from "../utils/validation/UserValidation";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/firebaseConfig";
 
 interface SigninFormValues {
   email: string;
@@ -32,54 +35,76 @@ const Signin = () => {
   const [checked, setChecked] = useState(false);
   const { showFeedback } = useFeedbackAlertStore();
   let router = useRouter();
+  const { setUser } = useUserStore();
 
   const queryClient = useQueryClient();
-  const { AxiosRequest} = useAxios();
+  const { AxiosRequest } = useAxios();
   const { SigninUserValidation } = UserValidationSchemas();
 
- 
 
-  const { mutateAsync, isPending } = useMutation({
-    mutationFn: async (values: SigninFormValues) => {
-      const finalVal = {
-      email: values.email,
-        password: values.password,
-      };
-      const response = await AxiosRequest({
-        url: "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyDUz34FFv5QcjV2TkS-tukbQh4DsMzukNg",
-        method: "POST",
-        data: finalVal,
-      });
 
-      return response.data;
-    },
 
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["fetch-user-data"] });
-      // console.log("token", response.access_token);
-      // storeToken(response.access_token);
-      // router.push("/feedback");
-    },
+const { mutateAsync: signInMutate, isPending: isSigningIn } = useMutation({
+  mutationFn: async (values: SigninFormValues) => {
+    // Firebase SDK sign-in
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      values.email,
+      values.password
+    );
+    const user = userCredential.user;
 
-    onError: () => {
-      showFeedback("Phone number or Password Incorrect", "failed");
-    },
-  });
+    const idToken = await user.getIdToken();
+    const refreshToken = user.refreshToken;
+
+    // persist tokens
+    await AsyncStorage.setItem("token", idToken);
+    await AsyncStorage.setItem("refreshToken", refreshToken);
+
+//verify user in backend
+    const verifyRes = await AxiosRequest({
+      url: "/users/verify",
+      method: "POST",
+      data: { firebaseUid: user.uid },
+      headers: { Authorization: `Bearer ${idToken}` },
+    });
+
+    if (verifyRes.status === 200) {
+      const userData = verifyRes.data.user;
+      setUser(userData);
+      await AsyncStorage.setItem("user", JSON.stringify(userData));
+    } else {
+      throw new Error("User verification failed");
+    }
+  },
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ["user"] });
+    router.push("/home");
+  },
+  onError: () => {
+    showFeedback("Failed to sign in", "failed");
+  },
+});
+
 
   const { handleSubmit, handleChange, values, errors, touched } =
     useFormik<SigninFormValues>({
       initialValues: {
-      email: "",
+        email: "",
         password: "",
       },
       validationSchema: SigninUserValidation,
       onSubmit: async (values) => {
         console.log("Submitting form:", values);
-        try {
-          await mutateAsync(values);
-        } catch (error: any) {
-          console.error("Error during form submission:", error.message);
-        }
+       
+
+     try{
+           await signInMutate(values);
+     }catch(err){
+          console.error("Sign-in error:", err);
+          showFeedback("Invalid email or password", "failed");
+      }
+       
       },
     });
 
@@ -87,39 +112,9 @@ const Signin = () => {
     setChecked((prev) => !prev);
   };
 
-
-  // const handleValue = async () => {
-    
-  //   let data = JSON.stringify({
-  //     "phone": "071665153",
-  //     "password": "Ushan@1999"
-  //   });
-    
-  //   let config = {
-  //     method: 'post',
-  //     maxBodyLength: Infinity,
-  //     url: 'https://api.thesocialist.lk:3000/auth/login',
-  //     headers: { 
-  //       'Content-Type': 'application/json'
-  //     },
-      
-  //     data : data
-  //   };
-    
-  //   axios.request(config)
-  //   .then((response) => {
-  //     console.log(JSON.stringify(response.data));
-  //   })
-  //   .catch((error) => {
-  //     console.log(error);
-  //   });
-  // };
-
-
-
   return (
     <SafeAreaView style={styles.container}>
-   {isPending && <ComponentLoading/>}
+      {isSigningIn && <ComponentLoading />}
       <TopHeader
         icon={
           <AntDesign
@@ -140,7 +135,6 @@ const Signin = () => {
         }
       />
 
-      <View style={styles.blurcontainer}></View>
       <View style={styles.inputcontainer}>
         <View style={styles.title}>
           <Text style={styles.titleText}>Welcome Back!</Text>
@@ -195,24 +189,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#2B9AAF",
-    alignItems: "center",
   },
   input: {
-    alignItems: "center",
+    paddingHorizontal: 20,
   },
   blur: {
     position: "absolute",
     top: -300,
   },
-  blurcontainer: {
-    position: "absolute",
-    width: "95%",
-    height: "20%",
-    backgroundColor: "rgba(255, 255, 255, 0.33)",
-    borderRadius: 16,
-    bottom: 0,
-    top: 245,
-  },
+
   inputcontainer: {
     position: "absolute",
     width: "100%",
