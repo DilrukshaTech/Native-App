@@ -17,7 +17,8 @@ import { CircularProgress } from "../components/progress/CircularProgress";
 import { ListProgressCircle } from "../components/progress/ListProgressCircle";
 import useUserStore from "../stores/useUserStore";
 import useAxios from "../utils/axios/useAxios";
-import { EditFirbasePassword } from "../utils/firebase/firebaseAuth";
+
+import { useLists } from "../hooks/myLists";
 
 export default function HomeScreen() {
   const [todayTasks, setTodayTasks] = useState(0);
@@ -26,6 +27,7 @@ export default function HomeScreen() {
   const [Time, setTime] = useState("");
 
   const { user,setUser} = useUserStore();
+  const { data: myList, isLoading:myListLoading  } = useLists(user?.id);
   const { AxiosRequest } = useAxios();
   const router = useRouter();
 
@@ -77,20 +79,9 @@ export default function HomeScreen() {
       refetchOnWindowFocus: false,
     });
 
-  // My list
-  const { data: myList, isLoading: myListLoading } = useQuery({
-    queryKey: ["lists"],
-    queryFn: async () => {
-      const response = await AxiosRequest({
-        url: `/users/completed-rate/${user?.id}`,
-        method: "GET",
-      });
-      return response.data;
-    },
-    refetchOnWindowFocus: false,
-  });
 
-  // console.log("My List", myList);
+
+  console.log("My List", myList);
   //get message randomly
 
   const getMessageByRate = (rate: number) => {

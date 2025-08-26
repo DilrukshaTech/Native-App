@@ -1,6 +1,4 @@
-// components/TaskCard.tsx
-import { Feather, MaterialIcons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   Modal,
   Pressable,
@@ -9,7 +7,11 @@ import {
   TextStyle,
   TouchableOpacity,
   View,
+  TouchableWithoutFeedback,
+  findNodeHandle,
+  UIManager,
 } from "react-native";
+import { Feather, MaterialIcons } from "@expo/vector-icons";
 
 type TaskCardProps = {
   category: string;
@@ -30,14 +32,32 @@ export default function TaskCard({
   dataStyle,
   onEdit,
   onDelete,
-  onPress,  
+  onPress,
 }: TaskCardProps) {
   const [menuVisible, setMenuVisible] = useState(false);
+  const [menuPosition, setMenuPosition] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
+
+  const buttonRef = useRef<View>(null);
+
+  const openMenu = () => {
+    if (buttonRef.current) {
+      const handle = findNodeHandle(buttonRef.current);
+      if (handle) {
+        UIManager.measureInWindow(handle, (x, y, width, height) => {
+          setMenuPosition({ x, y: y + height }); // place below button
+          setMenuVisible(true);
+        });
+      }
+    }
+  };
 
   return (
     <View style={styles.card}>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <Pressable  onPress={onPress}>
+        <Pressable onPress={onPress}>
           <View style={styles.circle} />
         </Pressable>
         <View>
@@ -51,49 +71,55 @@ export default function TaskCard({
         </View>
       </View>
 
+      {/* 3-dot button */}
       <TouchableOpacity
-        onPress={() => setMenuVisible(true)}
+        ref={buttonRef}
+        onPress={openMenu}
         style={{ position: "absolute", right: 12 }}
       >
         <Feather name="more-horizontal" size={22} color="#333" />
       </TouchableOpacity>
 
-      {/* Popup menu */}
+      {/* popup menu */}
       <Modal
         visible={menuVisible}
         transparent
         animationType="fade"
         onRequestClose={() => setMenuVisible(false)}
       >
-        <TouchableOpacity
-          style={styles.overlay}
-          activeOpacity={1}
-          onPress={() => setMenuVisible(false)}
-        >
-          <View style={styles.menu}>
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => {
-                onEdit && onEdit();
-                setMenuVisible(false);
-              }}
+        {/* fullscreen overlay to close when clicked outside */}
+        <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
+          <View style={styles.overlay}>
+            <View
+              style={[
+                styles.menu,
+                { top: menuPosition.y, left: menuPosition.x - 120 }, // adjust left offset
+              ]}
             >
-              <Feather name="edit-2" size={18} color="#000" />
-              <Text style={styles.menuText}>Edit</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => {
+                  onEdit?.();
+                  setMenuVisible(false);
+                }}
+              >
+                <Feather name="edit-2" size={18} color="#000" />
+                <Text style={styles.menuText}>Edit</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => {
-                onDelete && onDelete();
-                setMenuVisible(false);
-              }}
-            >
-              <MaterialIcons name="delete-outline" size={20} color="red" />
-              <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => {
+                  onDelete?.();
+                  setMenuVisible(false);
+                }}
+              >
+                <MaterialIcons name="delete-outline" size={20} color="red" />
+                <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </TouchableOpacity>
+        </TouchableWithoutFeedback>
       </Modal>
     </View>
   );
@@ -141,16 +167,19 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.05)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: "transparent",
   },
   menu: {
+    position: "absolute",
     backgroundColor: "#fff",
     borderRadius: 8,
     padding: 10,
     width: 140,
     elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
   menuItem: {
     flexDirection: "row",

@@ -5,18 +5,20 @@ import { Dialog, Portal, Text } from 'react-native-paper';
 type AlartProps = {
     visible: boolean;
     hideDialog: () => void;
+    title?: string;
+    description?: string;
+    icon?: string;
 }
 
-const Alart = ({visible,hideDialog}:AlartProps) => {
+const Alart = ({visible,hideDialog,title,description,icon}:AlartProps) => {
 
 
   return (
     <Portal>
       <Dialog visible={visible} onDismiss={hideDialog}>
-        <Dialog.Icon icon="alert" />
-        <Dialog.Title style={styles.title}>This is a title</Dialog.Title>
+        <Dialog.Title style={styles.title}>{title}</Dialog.Title>
         <Dialog.Content>
-          <Text variant="bodyMedium">This is simple dialog</Text>
+          <Text variant="bodyMedium">{description}</Text>
         </Dialog.Content>
         <Dialog.Actions>
             <Text onPress={hideDialog}>OK</Text>

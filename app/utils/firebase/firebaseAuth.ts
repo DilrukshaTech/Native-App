@@ -59,7 +59,6 @@ export const firebaseUpdateEmail = async (newEmail: string, password: string) =>
 export const EditFirbasePassword = async (email: string) => {
   try {
     
-    const user = auth.currentUser;
   await sendPasswordResetEmail(auth, email);
    
   } catch (error) {

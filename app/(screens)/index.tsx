@@ -51,7 +51,7 @@ export default function IndexScreen() {
 
           setUser(verifiedUser);
           await AsyncStorage.setItem("user", JSON.stringify(verifiedUser));
-          router.replace("/home");
+          router.replace("/tasks");
         } else {
           router.replace("/signin");
         }

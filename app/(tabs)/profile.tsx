@@ -21,7 +21,7 @@ export default function Calendar() {
   const { user } = useUserStore();
   const { AxiosRequest } = useAxios();
 
-  const { data: userData, isLoading: userLoading } = useQuery({
+  const { data: userData} = useQuery({
       queryKey: ["user", user?.id],
       queryFn: async () => {
         const response = await AxiosRequest({
@@ -66,6 +66,9 @@ console.log("Profile User Data", userData);
       <Alart 
       hideDialog={hideDialog}
       visible={visible}
+      title="Password Reset Email Sent"
+      description={`A password reset email has been sent to ${user?.email}. Please check your inbox to reset your password.`}
+      icon="email"
       />
       <ThemedView style={styles.container}>
         <ThemedView style={styles.card}>
@@ -98,12 +101,12 @@ console.log("Profile User Data", userData);
             </ThemedView>
           </ThemedView>
         </Pressable>
-        <Pressable onPress={() => router.push("/home")}>
+        <Pressable onPress={() => router.push("/about")}>
           <ThemedView style={styles.card}>
-            <AntDesign name="questioncircleo" size={24} color="#798494" />
+            <AntDesign name="questioncircleo" size={24} color="#798494"/>
             <ThemedText style={styles.text}>About Daily.do</ThemedText>
             <ThemedView style={{ flex: 1, alignItems: "flex-end" }}>
-              <Ionicons name="chevron-forward" size={24} color="#1B293D" />
+              <Ionicons name="chevron-forward" size={24} color="#1B293D"/>
             </ThemedView>
           </ThemedView>
         </Pressable>

@@ -40,7 +40,7 @@ export default function Tasks() {
   });
 
   const renderTasks = () => {
-    if (isLoading) {
+    if (isLoading || deleteMutate.isPending) {
       return <ComponentLoading />;
     }
   };
@@ -133,6 +133,33 @@ export default function Tasks() {
     await mutateAsync(id);
   };
 
+  const deleteMutate = useMutation({
+    mutationFn: async (id: taskProps) => {
+      try {
+        const response = await AxiosRequest({
+          url: `/tasks/${id}}`,
+          method: "DELETE",
+        });
+
+        return response.data;
+      } catch {
+        throw new Error();
+      }
+    }
+    , onSuccess() {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["completedTasksRate"] });
+      queryClient.invalidateQueries({ queryKey: ["lists"] });
+      queryClient.invalidateQueries({ queryKey: ["tasksbylist"] });
+    },
+    onError() {
+      showFeedback("Failed to delete the task", "failed");
+    }
+  });
+
+  const onDelete = async (id: taskProps) => {
+    await deleteMutate.mutateAsync(id);
+  };
   return (
     <SafeContainer>
       {renderTasks()}
@@ -167,6 +194,7 @@ export default function Tasks() {
                       : "#777",
                 }}
                 onPress={() => onSubmit(item.id)}
+                onDelete={() => onDelete(item.id)}
               />
             )}
           />
