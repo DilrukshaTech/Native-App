@@ -27,7 +27,7 @@ export default function Tasks() {
   const { showFeedback } = useFeedbackAlertStore();
 
   // mylist
-  const { data: myTasks, isLoading } = useQuery({
+  const { data: myTasks, isFetching } = useQuery({
     queryKey: ["tasks"],
     queryFn: async () => {
       const response = await AxiosRequest({
@@ -36,11 +36,12 @@ export default function Tasks() {
       });
       return response.data;
     },
+    enabled: !!user?.id, 
     refetchOnWindowFocus: false,
   });
 
   const renderTasks = () => {
-    if (isLoading || deleteMutate.isPending) {
+    if (isFetching || deleteMutate.isPending) {
       return <ComponentLoading />;
     }
   };
@@ -195,6 +196,7 @@ export default function Tasks() {
                 }}
                 onPress={() => onSubmit(item.id)}
                 onDelete={() => onDelete(item.id)}
+                onEdit={() => router.push(`/task/UpdateTask?id=${item.id}`)}
               />
             )}
           />

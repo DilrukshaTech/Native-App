@@ -55,7 +55,7 @@ export default function TaskCard({
   };
 
   return (
-    <View style={styles.card}>
+    <Pressable style={styles.card} onPress={onEdit}>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <Pressable onPress={onPress}>
           <View style={styles.circle} />
@@ -121,7 +121,7 @@ export default function TaskCard({
           </View>
         </TouchableWithoutFeedback>
       </Modal>
-    </View>
+    </Pressable>
   );
 }
 

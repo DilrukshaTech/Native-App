@@ -8,10 +8,9 @@ import { ThemedView } from "@/components/ThemedView";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useFormik } from "formik";
-
 import { useEffect, useState } from "react";
 import {
   Platform,
@@ -37,10 +36,10 @@ interface CreateListProps {
   endTime?: string;
   priority?: string;
   listId?: number | null;
-  Date?:string;
+    Date?:string;
 }
 
-export default function CreateTask() {
+export default function UpdateTask() {
   const { AxiosRequest } = useAxios();
   const { user } = useUserStore();
   const queryClient = useQueryClient();
@@ -49,8 +48,26 @@ export default function CreateTask() {
   const [time, setTime] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
+    const [showDatePicker, setShowDatePicker] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+
+  const { id} = useLocalSearchParams<{ id: string }>();
+
+  //get task by id 
+
+  const { data: taskData, isFetching: taskLoading } = useQuery({
+    queryKey: ["task", id],
+    queryFn: async () => {
+      const response = await AxiosRequest({
+        url: `/tasks/${id}`,
+        method: "GET",
+      });
+      return response.data;
+    },
+
+    enabled: !!id, 
+    refetchOnWindowFocus: false,
+    });
 
   // fetch lists
   const { data: myList, isLoading: myListLoading } = useLists(user?.id);
@@ -62,28 +79,25 @@ export default function CreateTask() {
       label: item.listTitle,
     })) || [];
 
-  const formik = useFormik({
-    initialValues: {
-      title: "",
-      description: "",
-      period: "",
-      startTime: "",
-      endTime: "",
-      priority: "High",
-      listId: null,
-      Date: "",
-    },
-    onSubmit: async (values) => {
-      await mutateAsync(values);
-    },
-  });
+ const formik = useFormik({
+  initialValues: {
+    title: taskData?.title || "",
+    description: taskData?.description || "",
+    period: taskData?.period || "Today",
+    startTime: taskData?.startTime || "",
+    endTime: taskData?.endTime || "",
+    priority: "High",
+    listId: taskData?.list?.id || null,
+    Date: taskData?.Date.split('T')[0] || "",
+  },
+  enableReinitialize: true, 
+  onSubmit: async (values) => {
+    await mutateAsync(values);
+  },
+});
 
-  // set default list (first one in array)
-  useEffect(() => {
-    if (popupList.length > 0 && !formik.values.listId) {
-      formik.setFieldValue("listId", popupList[0].id);
-    }
-  }, [popupList]);
+
+
 
   const handleTimeChange = (event: any, selectedTime?: Date) => {
     setShowPicker(Platform.OS === "ios");
@@ -100,7 +114,8 @@ export default function CreateTask() {
   };
 
 
-  const handleDateChange = (event: any, selectedDate?: Date) => {
+  //date change 
+   const handleDateChange = (event: any, selectedDate?: Date) => {
     setShowDatePicker(Platform.OS === "ios");
     if (selectedDate) {
      
@@ -108,19 +123,17 @@ export default function CreateTask() {
     }
   };
 
-
   const { mutateAsync, isPending } = useMutation({
     mutationFn: async (values: CreateListProps) => {
       const response = await AxiosRequest({
-        url: `/tasks/${user?.id}`,
-        method: "POST",
+        url: `/tasks/update?userId=${user?.id}&id=${id}`,
+        method: "PATCH",
         data: {
           title: values.title,
           description: values.description || "",
           period: values.period || "Today",
           startTime: values.startTime || "",
           endTime: "",
-          Date:values.Date || "",
           priority: "High",
           listId: values.listId || null,
         },
@@ -132,7 +145,7 @@ export default function CreateTask() {
       router.push("/tasks");
     },
     onError() {
-      showFeedback("Failed to create a task", "failed");
+      showFeedback("Failed to update the task", "failed");
     },
   });
 
@@ -141,12 +154,11 @@ export default function CreateTask() {
 
   // find selected list label
   const selectedListLabel =
-    popupList.find((l: any) => l.id === formik.values.listId)?.label ||
-    "My List";
+    popupList.find((l: any) => l.id === formik.values.listId)?.label
 
   return (
     <SafeContainer>
-      {(isPending || myListLoading) && <ComponentLoading />}
+      {(isPending || myListLoading || taskLoading) && <ComponentLoading />}
       <TopHeader
         icon={
           <AntDesign
@@ -178,7 +190,7 @@ export default function CreateTask() {
         <SingleInput
           label="Task Name"
           keyboardType="default"
-          value={formik.values.title}
+          value={formik.values.title }
           onChangeText={formik.handleChange("title")}
         />
 
@@ -192,7 +204,7 @@ export default function CreateTask() {
           >
             <PressableInput
               title="Today"
-              value="Today"
+            value={"Today" }
               selectedValue={formik.values.period}
               onChange={(val) => formik.setFieldValue("period", val)}
             />
@@ -210,7 +222,7 @@ export default function CreateTask() {
             />
           </ThemedView>
 
-          {/* Time picker & date picker*/}
+          {/* Time picker */}
           <ThemedView
             style={{ flexDirection: "row", justifyContent: "space-between" }}
           >
@@ -224,7 +236,7 @@ export default function CreateTask() {
             >
               <MaterialIcons name="access-time" size={20} color="black" />
               <ThemedText style={{ color: "#4C677D", fontSize: 14 }}>
-                {time || "Choose Time"}
+                {time || taskData?.startTime || "Choose Time"}
               </ThemedText>
             </Pressable>
             {formik.values.period=== "Upcoming" && (
@@ -243,30 +255,28 @@ export default function CreateTask() {
               </Pressable>
             )}
           </ThemedView>
-
           <Divider />
           {showPicker && (
             <DateTimePicker
               value={new Date()}
               mode="time"
               display="default"
-            
               is24Hour={false}
               onChange={handleTimeChange}
             />
           )}
+
             {showDatePicker && (
-            <DateTimePicker
-              value={formik.values.Date ? new Date(formik.values.Date) : new Date()}
-              mode="date"
-              display="default"
-              minimumDate={new Date()}
-              onChange={handleDateChange}
-            />
+                <DateTimePicker
+                value={formik.values.Date ? new Date(formik.values.Date) : new Date()}
+                mode="date"
+                display="default"
+                onChange={handleDateChange}
+                />
             )}
 
           {/* description */}
-
+          
           <ThemedView>
             {!isEditing ? (
               <TouchableOpacity
