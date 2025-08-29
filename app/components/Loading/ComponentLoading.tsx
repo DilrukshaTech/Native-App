@@ -18,7 +18,7 @@ const ComponentLoading = () => {
             right: 0,
             bottom: 0,
           
-            backgroundColor: "#2B9AAF",
+            backgroundColor: "#ffffff",
             justifyContent: "center",
             alignItems: "center",
             zIndex: 10,

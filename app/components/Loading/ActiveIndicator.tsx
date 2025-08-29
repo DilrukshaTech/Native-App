@@ -10,7 +10,7 @@ const ActiveIndicator=()=>{
              <ActivityIndicator
                animating={true}
                style={styles.spinner}
-               theme={{ colors: { primary: "#ffffff" } }}
+               theme={{ colors: { primary: "#2B9AAF" } }}
                size='large'
              />
            </SafeAreaView>
@@ -25,6 +25,9 @@ const styles = StyleSheet.create({
       backgroundColor: "transparent",
     },
   
-    spinner: {},
+    spinner: {
+
+     
+    },
   });
 export default ActiveIndicator

@@ -15,6 +15,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 import { FlatList } from "react-native-gesture-handler";
 import { SafeContainer } from "@/components/SafeContainer";
+import TaskSkeloton from "@/app/components/skeloton/TaskSkeloton";
 
 
 interface taskProps{
@@ -48,7 +49,7 @@ export default function Tasks() {
   console.log("myTasks", myTasks);
   const renderTasks = () => {
     if (isLoading) {
-      return <ComponentLoading />;
+      return <TaskSkeloton/>;
     }
   };
 

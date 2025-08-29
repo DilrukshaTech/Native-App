@@ -15,6 +15,7 @@ import useFeedbackAlertStore from "../stores/useFeedbackAlertStore";
 import useUserStore from "../stores/useUserStore";
 import useAxios from "../utils/axios/useAxios";
 import { SafeContainer } from "@/components/SafeContainer";
+import TaskSkeloton from "../components/skeloton/TaskSkeloton";
 
 interface taskProps {
   id: number;
@@ -42,7 +43,7 @@ export default function Tasks() {
 
   const renderTasks = () => {
     if (isFetching || deleteMutate.isPending) {
-      return <ComponentLoading />;
+      return <TaskSkeloton/>;
     }
   };
 

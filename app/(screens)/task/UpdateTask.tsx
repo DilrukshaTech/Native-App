@@ -26,6 +26,7 @@ import TopHeader from "../../components/topHeader/TopHeader";
 import useFeedbackAlertStore from "../../stores/useFeedbackAlertStore";
 import useUserStore from "../../stores/useUserStore";
 import useAxios from "../../utils/axios/useAxios";
+import UpdateTasksSkeloton from "@/app/components/skeloton/UpdateTasksSkeloton";
 
 interface CreateListProps {
   userId?: number;
@@ -158,7 +159,7 @@ export default function UpdateTask() {
 
   return (
     <SafeContainer>
-      {(isPending || myListLoading || taskLoading) && <ComponentLoading />}
+      {(isPending || myListLoading || taskLoading) && <UpdateTasksSkeloton/>}
       <TopHeader
         icon={
           <AntDesign

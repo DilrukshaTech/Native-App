@@ -12,13 +12,13 @@ import { ScrollView } from "react-native-gesture-handler";
 import FloatingButton from "../components/buttons/FloatButton";
 import { Card } from "../components/card/Card";
 import ListCard from "../components/card/ListCard";
-import ComponentLoading from "../components/Loading/ComponentLoading";
 import { CircularProgress } from "../components/progress/CircularProgress";
 import { ListProgressCircle } from "../components/progress/ListProgressCircle";
 import useUserStore from "../stores/useUserStore";
 import useAxios from "../utils/axios/useAxios";
 
 import { useLists } from "../hooks/myLists";
+import HomeSkeleton from "../components/skeloton/Skeloton";
 
 export default function HomeScreen() {
   const [todayTasks, setTodayTasks] = useState(0);
@@ -26,8 +26,8 @@ export default function HomeScreen() {
   const [completedTask, setCompletedTask] = useState(0);
   const [Time, setTime] = useState("");
 
-  const { user,setUser} = useUserStore();
-  const { data: myList, isLoading:myListLoading  } = useLists(user?.id);
+  const { user} = useUserStore();
+  const { data: myList, isFetching:myListLoading  } = useLists(user?.id);
   const { AxiosRequest } = useAxios();
   const router = useRouter();
 
@@ -81,9 +81,8 @@ export default function HomeScreen() {
 
 
 
-  console.log("My List", myList);
+  
   //get message randomly
-
   const getMessageByRate = (rate: number) => {
     return taskProgressMessages.find(
       ({ range }) => rate >= range[0] && rate <= range[1]
@@ -113,7 +112,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       {(myListLoading || isCompletedRateLoading || userLoading) && (
-        <ComponentLoading />
+      <HomeSkeleton/>
       )}
 
       <FloatingButton onPress={() => router.push("/list/createlist")} />
